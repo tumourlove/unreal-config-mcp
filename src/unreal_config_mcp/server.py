@@ -216,28 +216,67 @@ def explain_setting(section: str, key: str) -> str:
         )
 
     try:
-        conn = sqlite3.connect(_source_db_path)
+        conn = sqlite3.connect(f"file:{_source_db_path}?mode=ro", uri=True)
         conn.row_factory = sqlite3.Row
-        cursor = conn.execute(
-            "SELECT name, file, line, definition FROM symbols "
-            "WHERE definition LIKE ? OR name LIKE ? LIMIT 10",
+
+        lines = [f"CVar: {key}", ""]
+
+        # 1. Search symbols table for related class members / variables
+        sym_rows = conn.execute(
+            "SELECT s.name, s.qualified_name, s.kind, s.signature, s.docstring, "
+            "f.path, s.line_start "
+            "FROM symbols s JOIN files f ON s.file_id = f.id "
+            "WHERE s.name LIKE ? OR s.qualified_name LIKE ? LIMIT 5",
             (f"%{key}%", f"%{key}%"),
-        )
-        rows = cursor.fetchall()
+        ).fetchall()
+
+        # 2. Search source_fts for CVar registration lines (TAutoConsoleVariable, IConsoleManager)
+        fts_rows = conn.execute(
+            "SELECT c.c0 AS file_id, c.c1 AS line_num, c.c2 AS text "
+            "FROM source_fts_content c "
+            "WHERE c.c2 LIKE ? LIMIT 10",
+            (f"%{key}%",),
+        ).fetchall()
+
+        # Resolve file paths for FTS hits
+        source_hits: list[dict] = []
+        for row in fts_rows:
+            text = row["text"].strip()
+            if not text:
+                continue
+            f = conn.execute(
+                "SELECT path FROM files WHERE id = ?", (row["file_id"],)
+            ).fetchone()
+            if f:
+                source_hits.append({
+                    "path": f["path"],
+                    "line": row["line_num"],
+                    "text": text[:300],
+                })
+
         conn.close()
     except (sqlite3.Error, OSError) as exc:
         return f"Error reading source database: {exc}"
 
-    if not rows:
+    if not sym_rows and not source_hits:
         return f"No CVar registration found for '{key}' in engine source."
 
-    lines = [f"CVar: {key}", ""]
-    for row in rows:
-        lines.append(f"  Symbol: {row['name']}")
-        lines.append(f"  File: {row['file']}:{row['line']}")
-        definition = row["definition"]
-        if definition:
-            lines.append(f"  Definition: {definition[:300]}")
+    if sym_rows:
+        lines.append("Related symbols:")
+        for row in sym_rows:
+            lines.append(f"  {row['qualified_name']} ({row['kind']})")
+            lines.append(f"    {row['path']}:{row['line_start']}")
+            if row["signature"]:
+                lines.append(f"    Signature: {row['signature']}")
+            if row["docstring"]:
+                lines.append(f"    Doc: {row['docstring'][:200]}")
+        lines.append("")
+
+    if source_hits:
+        lines.append("Source references:")
+        for hit in source_hits:
+            lines.append(f"  {hit['path']}:{hit['line']}")
+            lines.append(f"    {hit['text']}")
         lines.append("")
 
     return "\n".join(lines)

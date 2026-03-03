@@ -149,19 +149,49 @@ class TestExplainSetting:
         db_path = tmp_path / "source.db"
         conn = sqlite3.connect(str(db_path))
         conn.execute("""
-            CREATE TABLE IF NOT EXISTS symbols (
+            CREATE TABLE IF NOT EXISTS files (
                 id INTEGER PRIMARY KEY,
-                name TEXT,
-                kind TEXT,
-                file TEXT,
-                line INTEGER,
-                definition TEXT
+                path TEXT,
+                module_id INTEGER,
+                file_type TEXT,
+                line_count INTEGER,
+                last_modified REAL
             )
         """)
         conn.execute("""
-            INSERT INTO symbols (name, kind, file, line, definition)
-            VALUES ('r.AntiAliasingMethod', 'variable', 'Engine/Source/Runtime/Renderer/Private/PostProcess/PostProcessAA.cpp', 42, 'static TAutoConsoleVariable<int32> CVarAntiAliasingMethod(TEXT("r.AntiAliasingMethod"), 2, TEXT("0:off, 2:TAA, 4:TSR"), ECVF_Scalability);')
+            CREATE TABLE IF NOT EXISTS symbols (
+                id INTEGER PRIMARY KEY,
+                name TEXT,
+                qualified_name TEXT,
+                kind TEXT,
+                file_id INTEGER,
+                line_start INTEGER,
+                line_end INTEGER,
+                parent_symbol_id INTEGER,
+                access TEXT,
+                signature TEXT,
+                docstring TEXT,
+                is_ue_macro INTEGER
+            )
         """)
+        conn.execute("""
+            CREATE VIRTUAL TABLE IF NOT EXISTS source_fts USING fts5(
+                file_id UNINDEXED, line_number UNINDEXED, text
+            )
+        """)
+        conn.execute(
+            "INSERT INTO files (id, path, module_id, file_type, line_count, last_modified) "
+            "VALUES (1, 'Engine/Source/Runtime/Renderer/Private/PostProcess/PostProcessAA.cpp', 1, 'cpp', 100, 0.0)"
+        )
+        conn.execute(
+            "INSERT INTO symbols (id, name, qualified_name, kind, file_id, line_start, line_end, signature) "
+            "VALUES (1, 'CVarAntiAliasingMethod', 'CVarAntiAliasingMethod', 'variable', 1, 42, 42, "
+            "'static TAutoConsoleVariable<int32> CVarAntiAliasingMethod')"
+        )
+        conn.execute(
+            "INSERT INTO source_fts (file_id, line_number, text) "
+            "VALUES (1, 42, 'static TAutoConsoleVariable<int32> CVarAntiAliasingMethod(TEXT(\"r.AntiAliasingMethod\"), 2, TEXT(\"0:off, 2:TAA, 4:TSR\"));')"
+        )
         conn.commit()
         conn.close()
 
