@@ -14,8 +14,9 @@ Unreal Engine's config system is a layered hierarchy of INI files (Base → Defa
 - [unreal-editor-mcp](https://github.com/tumourlove/unreal-editor-mcp) — Build diagnostics and editor log tools (Live Coding, error parsing, log search)
 - [unreal-material-mcp](https://github.com/tumourlove/unreal-material-mcp) — Material graph intelligence and editing (expressions, connections, parameters, instances, graph manipulation)
 - [unreal-blueprint-mcp](https://github.com/tumourlove/unreal-blueprint-mcp) — Blueprint graph reading (nodes, pins, connections, execution flow)
+- [unreal-animation-mcp](https://github.com/tumourlove/unreal-animation-mcp) — Animation data inspector and editor (sequences, montages, blend spaces, ABPs, skeletons, 62 tools)
 
-Together these servers give AI agents full-stack UE understanding: engine internals, API surface, your project code, config settings, build/runtime feedback, Blueprint graph data, and material graph inspection + editing.
+Together these servers give AI agents full-stack UE understanding: engine internals, API surface, your project code, config settings, build/runtime feedback, Blueprint graph data, material graph inspection + editing, and animation data inspection + editing.
 
 ## Quick Start
 
