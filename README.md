@@ -12,11 +12,12 @@ Unreal Engine's config system is a layered hierarchy of INI files (Base → Defa
 - [unreal-source-mcp](https://github.com/tumourlove/unreal-source-mcp) — Engine-level source intelligence (full UE C++ and HLSL)
 - [unreal-project-mcp](https://github.com/tumourlove/unreal-project-mcp) — Project-level source intelligence (your C++ code)
 - [unreal-editor-mcp](https://github.com/tumourlove/unreal-editor-mcp) — Build diagnostics and editor log tools (Live Coding, error parsing, log search)
-- [unreal-material-mcp](https://github.com/tumourlove/unreal-material-mcp) — Material graph intelligence and editing (expressions, connections, parameters, instances, graph manipulation)
+- [unreal-material-mcp](https://github.com/tumourlove/unreal-material-mcp) — Material graph intelligence, editing, and procedural creation (46 tools: expressions, parameters, instances, graph building, templates, C++ plugin)
 - [unreal-blueprint-mcp](https://github.com/tumourlove/unreal-blueprint-mcp) — Blueprint graph reading (nodes, pins, connections, execution flow)
 - [unreal-animation-mcp](https://github.com/tumourlove/unreal-animation-mcp) — Animation data inspector and editor (sequences, montages, blend spaces, ABPs, skeletons, 62 tools)
+- [unreal-api-mcp](https://github.com/nicobailon/unreal-api-mcp) by [Nico Bailon](https://github.com/nicobailon) — API surface lookup (signatures, #include paths, deprecation warnings)
 
-Together these servers give AI agents full-stack UE understanding: engine internals, API surface, your project code, config settings, build/runtime feedback, Blueprint graph data, material graph inspection + editing, and animation data inspection + editing.
+Together these servers give AI agents full-stack UE understanding: engine internals, API surface, your project code, config settings, build/runtime feedback, Blueprint graph data, animation data, and material graph intelligence + procedural creation.
 
 ## Quick Start
 
